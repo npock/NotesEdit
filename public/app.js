@@ -14,12 +14,18 @@ document.addEventListener("click", (event) => {
 
     const editTitle = prompt("new title please...");
     if (editTitle !== null && editTitle.trim() !== "") {
-      edit(id, editTitle).then(() => {
-        const element = event.target.closest("li");
-        const clickedButtonHTMLDiv = event.target.closest("div").outerHTML;
+      edit(id, editTitle)
+        .then((newNote) => {
+          console.log(newNote);
+          const element = event.target.closest("li");
+          const clickedButtonHTMLDiv = event.target.closest("div").outerHTML;
 
-        element.innerHTML = editTitle + clickedButtonHTMLDiv;
-      });
+          element.innerHTML = newNote.title + clickedButtonHTMLDiv;
+        })
+        .catch((error) => {
+          console.error("Ошибка при редактировании:", error);
+          alert("Произошла ошибка при сохранении изменений.");
+        });
     } else if (editTitle === null) {
       alert("Вы отменили ввод.");
     } else if (editTitle.trim() === "") {
@@ -33,22 +39,23 @@ async function remove(id) {
 }
 
 async function edit(id, editTitle) {
-  const editNote = { title: editTitle, id: id };
-  console.log("edit", editNote);
-  await fetch(`/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(editNote),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      // return response.json();
-    })
-    .catch((error) => {
-      console.error("Ошибка при выполнении запроса:", error);
+  try {
+    const editNote = { title: editTitle, id: id };
+
+    const response = await fetch(`/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(editNote),
     });
+    if (!response.ok) {
+      throw new Error("Ошибка в запросе на сервер");
+    }
+    const newNote = await response.json();
+    return newNote;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }

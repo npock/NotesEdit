@@ -51,11 +51,7 @@ app.delete("/:id", async (req, res) => {
 app.put("/:id", async (req, res) => {
   console.log("req", req.body);
   await editNote(req.body);
-  res.render("index", {
-    title: "Express App",
-    notes: await getNotes(),
-    created: false,
-  });
+  res.json(req.body);
 });
 
 app.listen(port, () => {
